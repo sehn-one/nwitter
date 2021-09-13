@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { dbService } from "fbase";
+import Ntwit from "components/Ntwit";
 
-const Home =()=> {
+const Home =({userObj})=> {
     const [ntwit,setNtwit] = useState("");
     const [ntwits,setNtwits] = useState([]);
     
@@ -10,18 +11,12 @@ const Home =()=> {
         e.preventDefault()
         await dbService.collection("ntwit").add({
             text:ntwit, 
-            createdAt:Date.now()
+            createdAt:Date.now(),
+            creatorId:userObj.uid
         })
         setNtwit("")
     } 
-    const getNtwit = async () => {
-        const dbNtwit = await dbService.collection("ntwit").get()
-        
-        dbNtwit.forEach((doc)=> {
-            const ntwitObj = {...doc.data(), id:doc.id}
-            setNtwits((prev)=>[ntwitObj,...prev]) 
-        })
-    };
+ 
     const onChange = (e)=>{
         e.preventDefault();
         const {
@@ -29,7 +24,14 @@ const Home =()=> {
         } = e
         setNtwit(value)
     };
-    useEffect(()=>{getNtwit()},[])
+    useEffect(()=>{
+        dbService.collection("ntwit").onSnapshot((snapShot)=>{
+            const newArr = snapShot.docs.map((doc)=>({
+                id:doc.id, ...doc.data()
+            }));
+            setNtwits(newArr)
+        })
+    },[])
     return (
         <>
             <form onSubmit={onSubmit}>
@@ -39,9 +41,7 @@ const Home =()=> {
             <div>
                 {
                     ntwits.map((nt)=>(
-                        <div key={nt.id}>
-                            <h4>{nt.text}</h4>
-                        </div>
+                       <Ntwit key={nt.id} nt={nt} isOwner={nt.creatorId === userObj.uid} />
                     ))
                 }
             </div>
