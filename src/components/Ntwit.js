@@ -1,4 +1,4 @@
-import { dbService } from "fbase"
+import { dbService, storageService } from "fbase"
 import { useEffect, useState } from "react"
 
 const Ntwit = ({nt,isOwner})=>{
@@ -9,6 +9,9 @@ const Ntwit = ({nt,isOwner})=>{
         const ok = window.confirm("삭제하시겠습니까?")
         if(ok){
             await dbService.doc(`ntwit/${nt.id}`).delete()
+            if( nt.attachmentUrl !== "" ){
+                await storageService.refFromURL(nt.attachmentUrl).delete()
+            }
         }
     }
     const toggleEditing=  ()=>{
@@ -37,6 +40,9 @@ const Ntwit = ({nt,isOwner})=>{
                 ):(
                     <>
                         <h4>{nt.text}</h4>
+                        {nt.attachmentUrl && (
+                            <img src={nt.attachmentUrl} width="50px" height="50px" alt="" />
+                        )}
                         {isOwner &&
                             (
                                 <>
