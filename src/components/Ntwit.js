@@ -18,13 +18,19 @@ const Ntwit = ({nt,isOwner})=>{
         const {target:{value}} = e
         setCurrentTwit(value)
     }
+    const onSubmit=async(e)=>{
+        e.preventDefault();
+        await dbService.doc(`ntwit/${nt.id}`).update({text:currentTwit})
+        setEditing(false);
+    }
     return (
         <div>
             {
                 editing?(
                     <>
-                        <form>
+                        <form onSubmit={onSubmit}>
                             <input onChange={onChange} value={currentTwit} required />
+                            <input type="submit" value="Update Ntwit" />
                         </form>
                         <button onClick={toggleEditing}>Cancel</button>
                     </>
